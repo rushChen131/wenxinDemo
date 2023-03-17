@@ -36,12 +36,10 @@ public class RequestService {
 
     public String getAccessToken() {
         try {
-//        设置请求头，请求类型为json
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("Accept-Charset", MediaType.APPLICATION_FORM_URLENCODED_VALUE);
             HttpEntity<HashMap<String, Object>> request = new HttpEntity<>(null, headers);
-//        设置请求参数
             BaseResponse baseResponse = restTemplate.postForObject("https://wenxin.baidu.com/moduleApi/portal/api/oauth/token?grant_type=client_credentials&client_id=" + appKey + "&client_secret=" + appSecret, request, BaseResponse.class);
             System.out.println("response:" + JSONObject.toJSONString(baseResponse));
             return baseResponse.getData();
@@ -53,14 +51,8 @@ public class RequestService {
 
     public ErnieResponse requestWenXin(String token, ErnieRequest ernieRequest, Integer urlIndex) {
         try {
-            System.out.println("request:"+ JSONObject.toJSONString(ernieRequest));
-//        设置请求头，请求类型为json
-            HttpEntity< MultiValueMap<String, String>> request = new HttpEntity<>(BeanUtils.beanToMap(ernieRequest), buildHeaders());
-            String url = UrlType.values()[urlIndex].getUrl();
-//        设置请求参数
-            BaseResponse responseEntity = restTemplate.postForObject(url + "?access_token=" + token, request, BaseResponse.class);
-            System.out.println("response:" + JSONObject.toJSONString(responseEntity));
-            return JSONObject.parseObject(responseEntity.getData(), ErnieResponse.class);
+            BaseResponse response = request(new HttpEntity<>(BeanUtils.beanToMap(ernieRequest), buildHeaders()), UrlType.values()[urlIndex].getUrl() + "?access_token=" + token);
+            return JSONObject.parseObject(response.getData(), ErnieResponse.class);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -69,17 +61,21 @@ public class RequestService {
 
     public ResultResponse getResult(String token, ResultRequest resultRequest) {
         try {
-//        设置请求头，请求类型为json
-            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(BeanUtils.beanToMap(resultRequest), buildHeaders());
-//        设置请求参数
-            BaseResponse responseEntity = restTemplate.postForObject("https://wenxin.baidu.com/moduleApi/portal/api/rest/1.0/ernie/v1/getResult?access_token=" + token, request, BaseResponse.class);
-            System.out.println("response:" + JSONObject.toJSONString(responseEntity));
-            return JSONObject.parseObject(responseEntity.getData(), ResultResponse.class);
+            BaseResponse response = request(new HttpEntity<>(BeanUtils.beanToMap(resultRequest), buildHeaders()), "https://wenxin.baidu.com/moduleApi/portal/api/rest/1.0/ernie/v1/getResult?access_token=" + token);
+            return JSONObject.parseObject(response.getData(), ResultResponse.class);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
+
+    private BaseResponse request(HttpEntity<MultiValueMap<String, String>> request, String url) {
+        System.out.println("request url :" + url + " data :" + JSONObject.toJSONString(request));
+        BaseResponse responseEntity = restTemplate.postForObject(url, request, BaseResponse.class);
+        System.out.println("response:" + JSONObject.toJSONString(responseEntity));
+        return responseEntity;
+    }
+
 
     private HttpHeaders buildHeaders() {
         HttpHeaders headers = new HttpHeaders();
