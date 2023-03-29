@@ -2,6 +2,7 @@ package com.wenxin.demo;
 
 import com.wenxin.demo.bo.request.ErnieRequest;
 import com.wenxin.demo.bo.request.ResultRequest;
+import com.wenxin.demo.bo.request.ViLGRequest;
 import com.wenxin.demo.bo.response.ErnieResponse;
 import com.wenxin.demo.enums.MaskType;
 import com.wenxin.demo.enums.TaskType;
@@ -80,12 +81,30 @@ class DemoControllerTest {
         return requestService.requestWenXin(token, request, 6);
     }
 
+    ErnieResponse requestImage(String text, String style,String resolution) {
+        ViLGRequest request = new ViLGRequest();
+        request.setText(text);
+        request.setStyle(style);
+        request.setResolution(resolution);
+        request.setNum(1);
+        return requestService.requestText2img(token, request);
+    }
+
 
     @Test
     void getResult() {
         setToken();
         ErnieResponse response = request("写个都市异能小说");
         System.out.println(requestService.getResult(token, ResultRequest.builder().taskId(response.getTaskId()).build()));
+    }
+
+
+    @Test
+    void getImageResult() {
+        setToken();
+        ErnieResponse response = requestImage("火焰，凤凰，少女，毛发细致，上半身立绘，精致面容，cg感，高清，3d，",
+                "古风","1024*1536");
+        System.out.println(requestService.getImageResult(token, ResultRequest.builder().taskId(response.getTaskId()).build()));
     }
 
 }

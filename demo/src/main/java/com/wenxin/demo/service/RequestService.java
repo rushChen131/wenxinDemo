@@ -4,9 +4,11 @@ import ch.qos.logback.classic.jmx.MBeanUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.wenxin.demo.bo.request.ErnieRequest;
 import com.wenxin.demo.bo.request.ResultRequest;
+import com.wenxin.demo.bo.request.ViLGRequest;
 import com.wenxin.demo.bo.response.BaseResponse;
 import com.wenxin.demo.bo.response.ErnieResponse;
 import com.wenxin.demo.bo.response.ResultResponse;
+import com.wenxin.demo.constants.Constant;
 import com.wenxin.demo.enums.UrlType;
 import com.wenxin.demo.util.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,10 +27,8 @@ import java.util.HashMap;
 @Service
 public class RequestService {
 
-    @Value("${app.key:}")
     private String appKey;
 
-    @Value("${app.secret:}")
     private String appSecret;
 
     @Resource
@@ -62,6 +62,26 @@ public class RequestService {
     public ResultResponse getResult(String token, ResultRequest resultRequest) {
         try {
             BaseResponse response = request(new HttpEntity<>(BeanUtils.beanToMap(resultRequest), buildHeaders()), "https://wenxin.baidu.com/moduleApi/portal/api/rest/1.0/ernie/v1/getResult?access_token=" + token);
+            return JSONObject.parseObject(response.getData(), ResultResponse.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public ErnieResponse requestText2img(String token, ViLGRequest viLGRequest) {
+        try {
+            BaseResponse response = request(new HttpEntity<>(BeanUtils.beanToMap(viLGRequest), buildHeaders()), Constant.TEXT2IMG + "?access_token=" + token);
+            return JSONObject.parseObject(response.getData(), ErnieResponse.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public ResultResponse getImageResult(String token, ResultRequest resultRequest) {
+        try {
+            BaseResponse response = request(new HttpEntity<>(BeanUtils.beanToMap(resultRequest), buildHeaders()), Constant.IMG_RESULT + "?access_token=" + token);
             return JSONObject.parseObject(response.getData(), ResultResponse.class);
         } catch (Exception e) {
             e.printStackTrace();
